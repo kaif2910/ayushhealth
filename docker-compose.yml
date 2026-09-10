@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ayush_case_taking
+      POSTGRES_USER: ayush
+      POSTGRES_PASSWORD: ayush
+    ports:
+      - "5432:5432"
+    volumes:
+      - ayush_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ayush -d ayush_case_taking"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://ayush:ayush@postgres:5432/ayush_case_taking}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      JWT_SECRET: ${JWT_SECRET:-sih26047-demo-secret-change-for-production}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ayush_uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  ayush_postgres_data:
+  ayush_uploads:
