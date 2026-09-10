@@ -2,6 +2,7 @@ import asyncio
 import re
 from dotenv import load_dotenv
 load_dotenv()
+import os
 import shutil
 import uuid
 from datetime import datetime
