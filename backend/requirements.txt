@@ -8,3 +8,5 @@ pymysql
 cryptography
 fpdf2
 python-dotenv
+
+uvicorn
