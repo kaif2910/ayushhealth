@@ -64,6 +64,12 @@ except Exception:
 app.include_router(patient_router)
 app.include_router(consultation_router)
 
+# On Vercel there is no migration step — ensure tables exist in the DB.
+if os.getenv("VERCEL"):
+    from .database import engine, Base
+    from . import models  # noqa: F401 – ensure all models are registered
+    Base.metadata.create_all(bind=engine)
+
 
 @app.get("/")
 def root():

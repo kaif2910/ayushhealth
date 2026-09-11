@@ -1,4 +1,5 @@
 import os
+import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -8,6 +9,18 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "sqlite:///./ayush_case_taking.db",
 )
+
+# On Vercel, strip SSL verification params (the `cryptography` package is not
+# available in the serverless runtime, so pymysql cannot verify certs).
+if os.getenv("VERCEL") and "mysql" in DATABASE_URL:
+    DATABASE_URL = re.sub(r"[?&]ssl_verify_cert=[^&]*", "", DATABASE_URL)
+    DATABASE_URL = re.sub(r"[?&]ssl_verify_identity=[^&]*", "", DATABASE_URL)
+    # Clean up leftover ? or & at the end
+    DATABASE_URL = DATABASE_URL.rstrip("?&")
+
+# On Vercel with SQLite fallback, use /tmp (the only writable directory)
+if os.getenv("VERCEL") and DATABASE_URL.startswith("sqlite"):
+    DATABASE_URL = "sqlite:////tmp/ayush_case_taking.db"
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
