@@ -55,7 +55,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+# On Vercel, /tmp may not persist and StaticFiles may fail; skip gracefully
+try:
+    app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+except Exception:
+    pass  # Vercel serverless: uploads not available between invocations
 
 app.include_router(patient_router)
 app.include_router(consultation_router)
